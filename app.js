@@ -68,9 +68,6 @@ bot.dialog('/instant-note', [
     if (results.response) {
       session.dialogData.content = results.response;
     }
-    console.log('Checking length of');
-    console.log(session.dialogData.content);
-    console.log(session.dialogData.content.length);
     if (session.dialogData.content.length > 140) {
       const extraLength = session.dialogData.content.length - 140;
       builder.Prompts.confirm(session, 'Whoa this post is ' + extraLength +' characters too long for twitter. Is that ok?');
@@ -248,6 +245,7 @@ function micropub(session, data) {
     request.post(options, (err, httpResponse, body) => {
       if (err || httpResponse.statusCode != 201) {
         console.log(err);
+        console.log('Status code: ' + statusCode);
         reject(err);
       } else {
         let url = '';

@@ -13,7 +13,7 @@ server.use(plugins.acceptParser(server.acceptable));
 server.use(plugins.queryParser());
 server.use(plugins.bodyParser());
 server.listen(process.env.port || process.env.PORT || 3978, () => {
-  console.log('%s listening to %s', server.name, server.url);
+  console.log('%s listening to %s', server.name, process.env.URL);
 });
 
 // Create chat bot
@@ -182,8 +182,8 @@ bot.dialog('/authenticate', [
           session.userData.me = userUrl;
           var authParams = {
             me: userUrl,
-            client_id: server.url,
-            redirect_uri: server.url + '/auth',
+            client_id: process.env.URL,
+            redirect_uri: process.env.URL + '/auth',
             response_type: 'code',
             scope: 'post',
           };
@@ -204,8 +204,8 @@ bot.dialog('/authenticate', [
       me: session.userData.me,
       code: code,
       scope: 'post',
-      client_id: server.url,
-      redirect_uri: server.url + '/auth',
+      client_id: process.env.URL,
+      redirect_uri: process.env.URL + '/auth',
     };
     request.post(session.userData.tokenEndpoint, {
       form: form,

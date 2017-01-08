@@ -52,7 +52,7 @@ bot.dialog('/', new builder.IntentDialog()
 
 bot.dialog('/instant-note', [
   (session, args, next) => {
-    if (!session.userData.micropub || ! session.userData.accessToken) {
+    if (!session.userData.micropub || !session.userData.accessToken) {
       session.send('Whoa you dont seem to have an access token saved.');
       session.endDialog('Just type "authenticate" to get started');
     } else {
@@ -88,8 +88,9 @@ bot.dialog('/instant-note', [
         content: session.dialogData.content,
       }).then((card) => {
         session.endDialog(card);
-      }).catch(() => {
-        session.endDialog('Uh oh. There was an error sending that');
+      }).catch((err) => {
+        session.send('Uh oh. There was an error sending that');
+        session.endDialog(JSON.stringify(err));
       });
     }
   }
@@ -247,7 +248,7 @@ function micropub(session, data) {
     request.post(options, (err, httpResponse, body) => {
       if (err || httpResponse.statusCode != 201) {
         console.log(err);
-        reject();
+        reject(err);
       } else {
         let url = '';
         if (httpResponse && httpResponse.headers && httpResponse.headers.Location) {

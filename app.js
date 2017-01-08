@@ -245,7 +245,7 @@ function micropub(session, data) {
     request.post(options, (err, httpResponse, body) => {
       if (err || httpResponse.statusCode != 201) {
         console.log(err);
-        console.log('Status code: ' + statusCode);
+        console.log('Status code: ' + httpResponse.statusCode);
         reject(err);
       } else {
         let url = '';

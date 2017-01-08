@@ -79,7 +79,7 @@ bot.dialog('/instant-note', [
     if (results.response === false) {
       session.endDialog('Ok I have cancelled that post. Feel free to try again');
     } else {
-      session.endDialog('Sending post');
+      session.send('Sending post');
       micropub(session, {
         h: 'entry',
         content: session.dialogData.content,
@@ -154,22 +154,19 @@ bot.dialog('/authenticate', [
     session.send(`Ok I'll try to authenticate at ${results.response}`);
     request.get(userUrl, (err, response, body) => {
       if (err) {
-        session.send('There was an error accessing your site');
         console.log(err);
-        session.endDialog();
+        session.endDialog('There was an error accessing your site');
       }
       if (!body) {
-        session.send('Your site did not return a body');
-        session.endDialog();
+        session.endDialog('Your site did not return a body');
       }
 
       Microformats.get({
         html: body,
       }, (err, mfData) => {
         if (err) {
-          session.send('There was an error getting your microformats data');
           console.log(err);
-          session.endDialog();
+          session.endDialog('There was an error getting your microformats data');
         }
 
         if (mfData && mfData.rels && mfData.rels.authorization_endpoint && mfData.rels.token_endpoint && mfData.rels.micropub) {
@@ -189,8 +186,7 @@ bot.dialog('/authenticate', [
           session.send(`Ok visit this link to authorize me: ${authUrl}`);
           builder.Prompts.text(session, 'Paste the code you get back to me');
         } else {
-          session.send('Your site seems to be missing a required endpoint');
-          session.endDialog();
+          session.endDialog('Your site seems to be missing a required endpoint');
         }
       });
     });
@@ -208,28 +204,24 @@ bot.dialog('/authenticate', [
       form: form,
     }, (err, response, body) => {
       if (err) {
-        session.send('There was an error verifying your code.');
         console.log(err);
-        session.endDialog();
+        session.endDialog('There was an error verifying your code.');
       }
 
       if (response && response.statusCode !== 200) {
-        session.send('There was an error verifying your code:');
-        session.send(response.body);
         console.log(response.body);
-        session.endDialog();
+        session.send('There was an error verifying your code:');
+        session.endDialog(response.body);
       }
 
       var bodyData = qs.parse(body);
 
       if (!bodyData.me) {
-        session.send('Malformed response from authorization server.');
-        session.endDialog();
+        session.endDialog('Malformed response from authorization server.');
       }
 
       session.userData.accessToken = bodyData.access_token;
-      session.send('Ok I am now authenticated and ready to send micropub requests');
-      session.endDialog();
+      session.endDialog('Ok I am now authenticated and ready to send micropub requests');
     });
   }
 ]);

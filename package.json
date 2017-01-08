@@ -1,0 +1,18 @@
+{
+  "name": "postrchildbot",
+  "version": "1.0.0",
+  "description": "A chatbot for making micropub request",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Grant Richmond",
+  "license": "ISC",
+  "dependencies": {
+    "botbuilder": "^3.5.1",
+    "microformat-node": "^2.0.1",
+    "request": "^2.79.0",
+    "restify": "^4.3.0",
+    "restify-plugins": "^1.5.0"
+  }
+}

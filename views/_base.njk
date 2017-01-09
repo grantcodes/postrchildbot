@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PostrChild</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="//brick.a.ssl.fastly.net/Fira+Mono:700">
+    <style>
+        html {
+            background-color: #1b2b34;
+            color: #cdd3de;
+            font-size: 130%;
+            font-family: 'Fira Mono', monospace;
+            padding: 1em;
+            text-align: center;
+            font-weight: 700;
+            line-height: 1.5;
+        }
+
+        body {
+            max-width: 30em;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 5em;
+        }
+
+        a {
+            color: #5fb3b3;
+        }
+        a:hover,
+        a:focus {
+            color: #ec5f67;
+        }
+
+        pre {
+            text-align: left;
+            font-size: 1em;
+            padding: 1em;
+            line-height: 1.2;
+            background-color: #4f5b66;
+        }
+
+        footer {
+            margin-top: 5em;
+        }
+
+        .button {
+            display: inline-block;
+            appearance: none;
+            border: none;
+            padding: 1em;
+            font-size: 1em;
+            text-decoration: none;
+            color: #343d46;
+            background-color: #ec5f67;
+        }
+        .button:hover,
+        .button:focus {
+            color: #343d46;
+            background-color: #f99157;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>PostrChild</h1>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+    <footer>
+        <p>By <a href="https://grant.codes">grant.codes</a></p>
+        <p>Source code available on <a href="https://github.com/terminalpixel/postrchildbot">GitHub</a></p>
+    </footer>
+</body>
+</html>

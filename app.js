@@ -1,19 +1,25 @@
 'use strict';
 
-const restify = require('restify');
-const plugins = require('restify-plugins');
+const express = require('express');
+const bodyParser = require('body-parser');
+const nunjucks = require('nunjucks');
 const builder = require('botbuilder');
 const request = require('request');
 const Microformats = require('microformat-node');
 const qs = require('querystring');
 
-// Setup Restify Server
-const server = restify.createServer();
-server.use(plugins.acceptParser(server.acceptable));
-server.use(plugins.queryParser());
-server.use(plugins.bodyParser());
-server.listen(process.env.port || process.env.PORT || 3978, () => {
-  console.log('%s listening to %s', server.name, process.env.URL);
+// Setup express server for html site
+const app = express();
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
+nunjucks.configure('views', {
+  autoescape: true,
+  express: app,
+});
+
+app.listen(process.env.port || process.env.PORT || 3978, () => {
+  console.log('%s listening to %s', app.name, process.env.URL);
 });
 
 // Create chat bot
@@ -24,13 +30,16 @@ const connector = new builder.ChatConnector({
 const bot = new builder.UniversalBot(connector);
 const intents = new builder.IntentDialog();
 
-server.post('/bot', connector.listen());
+app.post('/bot', connector.listen());
 
-server.get('/auth', (req, res, next) => {
+app.get('/', (req, res) => {
+  res.render('home.njk');
+});
+
+app.get('/auth', (req, res) => {
   const me = req.query.me;
   const code = req.query.code;
-  res.send('Paste this code into the chat: ' + code);
-  return next();
+  res.render('auth.njk', {code: code});
 });
 
 //=========================================================

@@ -143,6 +143,28 @@ bot.dialog('/advanced-post', [
     if (results && results.response && results.response != 'skip') {
       session.dialogData.data.category = results.response.split(' ');
     }
+    builder.Prompts.confirm(session, 'Do you want to add an image?');
+  },
+  (session, results, next) => {
+    if (results && results.response) {
+      builder.Prompts.attachment(session, 'Attach an image');
+    } else {
+      next();
+    }
+  },
+  (session, results, next) => {
+    if (results && results.response) {
+      // results.response.name;
+      // results.response.contentType;
+      // results.response.contentUrl;
+    }
+    // TODO: Add the image to the post.
+    // TODO: Get the below properties:
+    // in-reply-to
+    // like-of
+    // repost-of
+  },
+  (session, results, next) => {
     getSyndication(session).then((options) => {
       builder.Prompts.text(session, 'Any sydication options? Write any of ' + options.join(' ') + ' (space seperated or skip)');
     }).catch(() => {

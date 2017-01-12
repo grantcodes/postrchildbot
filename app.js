@@ -163,7 +163,7 @@ bot.dialog('/authenticate', [
     builder.Prompts.text(session, 'What is your domain?');
   },
   (session, results) => {
-    const userUrl = results.response;
+    const userUrl = cleanUrl(results.response);
     session.send(`Ok I'll try to authenticate at ${results.response}`);
     request.get(userUrl, (err, response, body) => {
       if (err) {
@@ -291,4 +291,15 @@ function getSyndication(session) {
       }
     });
   });
+}
+
+function cleanUrl(url) {
+  url = url.trim();
+  if (url.charAt(0) == '<') {
+    url = url.substr(1);
+  }
+  if (url.charAt(url.length - 1 == '>')) {
+    url = url.substring(0, url.length - 1);
+  }
+  return url;
 }

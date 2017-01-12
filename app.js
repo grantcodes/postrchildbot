@@ -60,6 +60,7 @@ bot.dialog('/', new builder.IntentDialog()
   .matches(regexes.quickPost, '/instant-note')
   .matches(/^post/i, '/instant-note')
   .matches(/^advancedpost/i, '/advanced-post')
+  .matches(/^help/i, '/help')
   .onDefault(builder.DialogAction.send("I'm sorry. I didn't understand."))
 );
 
@@ -70,7 +71,8 @@ bot.dialog('/instant-note', [
       session.endDialog('Just type "authenticate" to get started');
     } else {
       if (session.message.text && session.message.text.match(regexes.quickPost)) {
-        session.dialogData.content = session.message.text.replace(regexes.quickPost, '');
+        session.message.text = session.message.text.replace(regexes.quickPost, '');
+        session.dialogData.content = cleanMessage(session.message).text;
         next();
       } else {
         builder.Prompts.text(session, 'What do you want to post?');
@@ -185,7 +187,7 @@ bot.dialog('/authenticate', [
     builder.Prompts.text(session, 'What is your domain?');
   },
   (session, results) => {
-    const userUrl = results.response;
+    const userUrl = cleanUrl(results.response);
     session.send(`Ok I'll try to authenticate at ${results.response}`);
     request.get(userUrl, (err, response, body) => {
       if (err) {
@@ -261,6 +263,24 @@ bot.dialog('/authenticate', [
   }
 ]);
 
+bot.dialog('/help', [
+  (session) => {
+    session.send('Here\'s what I can do:');
+    const helpCard = new builder.Message(session)
+      .attachments([
+        new builder.HeroCard(session)
+          .title('PostrChild Help')
+          .buttons([
+            builder.CardAction.imBack(session, 'post', 'Post a simple note'),
+            builder.CardAction.imBack(session, 'auth', 'Authenticate with your micropub endpoint'),
+            builder.CardAction.imBack(session, 'help', 'Show this help message'),
+          ])
+      ]);
+    session.send(helpCard);
+    session.endDialog('Or to quickly post a note just prepend your content with the post keyword and it will be posted instantly (post ****)');
+  },
+]);
+
 function micropub(session, data) {
   return new Promise((fulfill, reject) => {
     const options = {};
@@ -313,4 +333,23 @@ function getSyndication(session) {
       }
     });
   });
+}
+
+function cleanUrl(url) {
+  url = url.trim();
+  if (url.charAt(0) == '<') {
+    url = url.substr(1);
+  }
+  if (url.charAt(url.length - 1 == '>')) {
+    url = url.substring(0, url.length - 1);
+  }
+  return url;
+}
+
+function cleanMessage(message) {
+  if (message.source && message.source == 'slack') {
+    message.text = message.text.replace('<', '');
+    message.text = message.text.replace('>', '');
+  }
+  return message;
 }

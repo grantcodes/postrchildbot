@@ -70,7 +70,8 @@ bot.dialog('/instant-note', [
       session.endDialog('Just type "authenticate" to get started');
     } else {
       if (session.message.text && session.message.text.match(regexes.quickPost)) {
-        session.dialogData.content = session.message.text.replace(regexes.quickPost, '');
+        session.message.text = session.message.text.replace(regexes.quickPost, '');
+        session.dialogData.content = cleanMessage(session.message).text;
         next();
       } else {
         builder.Prompts.text(session, 'What do you want to post?');
@@ -302,4 +303,12 @@ function cleanUrl(url) {
     url = url.substring(0, url.length - 1);
   }
   return url;
+}
+
+function cleanMessage(message) {
+  if (message.source && message.source == 'slack') {
+    message.text = message.text.replace('<', '');
+    message.text = message.text.replace('>', '');
+  }
+  return message;
 }

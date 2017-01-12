@@ -60,6 +60,7 @@ bot.dialog('/', new builder.IntentDialog()
   .matches(regexes.quickPost, '/instant-note')
   .matches(/^post/i, '/instant-note')
   .matches(/^advancedpost/i, '/advanced-post')
+  .matches(/^help/i, '/help')
   .onDefault(builder.DialogAction.send("I'm sorry. I didn't understand."))
 );
 
@@ -238,6 +239,24 @@ bot.dialog('/authenticate', [
       session.endDialog('Ok I am now authenticated and ready to send micropub requests');
     });
   }
+]);
+
+bot.dialog('/help', [
+  (session) => {
+    session.send('Here\'s what I can do:');
+    const helpCard = new builder.Message(session)
+      .attachments([
+        new builder.HeroCard(session)
+          .title('PostrChild Help')
+          .buttons([
+            builder.CardAction.imBack(session, 'post', 'Post a simple note'),
+            builder.CardAction.imBack(session, 'auth', 'Authenticate with your micropub endpoint'),
+            builder.CardAction.imBack(session, 'help', 'Show this help message'),
+          ])
+      ]);
+    session.send(helpCard);
+    session.endDialog('Or to quickly post a note just prepend your content with the post keyword and it will be posted instantly (post ****)');
+  },
 ]);
 
 function micropub(session, data) {

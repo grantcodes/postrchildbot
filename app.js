@@ -18,8 +18,13 @@ nunjucks.configure('views', {
   express: app,
 });
 
-app.listen(process.env.port || process.env.PORT || 3978, () => {
-  console.log('%s listening to %s', app.name, process.env.URL);
+const appConfig = {
+  port: process.env.port || process.env.PORT || 3978,
+  url: process.env.URL || 'http://localhost:3978',
+};
+
+app.listen(appConfig.port, () => {
+  console.log('%s listening to %s', app.name, appConfig.url);
 });
 
 // Create chat bot
@@ -51,10 +56,9 @@ const regexes = {
 };
 
 bot.dialog('/', new builder.IntentDialog()
-  .matchesAny([/^authenticate/i, /^authorize/i], '/authenticate')
+  .matchesAny([/^authenticate/i, /^authorize/i, /^auth/i], '/authenticate')
   .matches(regexes.quickPost, '/instant-note')
   .matches(/^post/i, '/instant-note')
-  // .matches(/^quickpost/i, '/instant-note')
   .matches(/^advancedpost/i, '/advanced-post')
   .onDefault(builder.DialogAction.send("I'm sorry. I didn't understand."))
 );
@@ -185,8 +189,8 @@ bot.dialog('/authenticate', [
           session.userData.me = userUrl;
           var authParams = {
             me: userUrl,
-            client_id: process.env.URL,
-            redirect_uri: process.env.URL + '/auth',
+            client_id: appConfig.url,
+            redirect_uri: appConfig.url + '/auth',
             response_type: 'code',
             scope: 'post',
           };
@@ -206,8 +210,8 @@ bot.dialog('/authenticate', [
       me: session.userData.me,
       code: code,
       scope: 'post',
-      client_id: process.env.URL,
-      redirect_uri: process.env.URL + '/auth',
+      client_id: appConfig.url,
+      redirect_uri: appConfig.url + '/auth',
     };
     request.post(session.userData.tokenEndpoint, {
       form: form,

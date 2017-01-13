@@ -71,8 +71,8 @@ bot.dialog('/instant-note', [
       session.endDialog('Just type "authenticate" to get started');
     } else {
       if (session.message.text && session.message.text.match(regexes.quickPost)) {
-        session.message.text = session.message.text.replace(regexes.quickPost, '');
-        session.dialogData.content = cleanMessage(session.message).text;
+        let text = session.message.text.replace(regexes.quickPost, '');
+        session.dialogData.content = cleanText(text, session.message.source);
         next();
       } else {
         builder.Prompts.text(session, 'What do you want to post?');
@@ -111,6 +111,10 @@ bot.dialog('/instant-note', [
 bot.dialog('/advanced-post', [
   (session, next) => {
     session.dialogData.data = {};
+    session.dialogData.source = false;
+    if (session.message && session.message.source) {
+      session.dialogData.source = session.message.source;
+    }
     builder.Prompts.choice(session, 'What sort of entry are you creating?', ['entry', 'card', 'event', 'cite']);
   },
   (session, results, next) => {
@@ -119,19 +123,19 @@ bot.dialog('/advanced-post', [
   },
   (session, results, next) => {
     if (results && results.response && results.response != 'skip') {
-      session.dialogData.data.name = results.response;
+      session.dialogData.data.name = cleanText(results.response, session.dialogData.source);
     }
     builder.Prompts.text(session, 'Add a summary (or skip)');
   },
   (session, results, next) => {
     if (results && results.response && results.response != 'skip') {
-      session.dialogData.data.summary = results.response;
+      session.dialogData.data.summary = cleanText(results.response, session.dialogData.source);
     }
     builder.Prompts.text(session, 'Add content (or skip)');
   },
   (session, results, next) => {
     if (results && results.response && results.response != 'skip') {
-      session.dialogData.data.content = results.response;
+      session.dialogData.data.content = cleanText(results.response, session.dialogData.source);
     }
     builder.Prompts.time(session, 'Add published time (you can say now)');
   },
@@ -145,6 +149,24 @@ bot.dialog('/advanced-post', [
     if (results && results.response && results.response != 'skip') {
       session.dialogData.data.category = results.response.split(' ');
     }
+    builder.Prompts.text(session, 'Add in-reply-to (or skip)');
+  },
+  (session, results, next) => {
+    if (results && results.response && results.response != 'skip') {
+      session.dialogData.data['in-reply-to'] = cleanUrl(results.response);
+    }
+    builder.Prompts.text(session, 'Add like-of (or skip)');
+  },
+  (session, results, next) => {
+    if (results && results.response && results.response != 'skip') {
+      session.dialogData.data['like-of'] = cleanUrl(results.response);
+    }
+    builder.Prompts.text(session, 'Add repost-of (or skip)');
+  },
+  (session, results, next) => {
+    if (results && results.response && results.response != 'skip') {
+      session.dialogData.data['repost-of'] = cleanUrl(results.response);
+    }
     builder.Prompts.confirm(session, 'Do you want to add an image?');
   },
   (session, results, next) => {
@@ -155,16 +177,13 @@ bot.dialog('/advanced-post', [
     }
   },
   (session, results, next) => {
-    if (results && results.response) {
-      // results.response.name;
-      // results.response.contentType;
-      // results.response.contentUrl;
+    if (results && results.response && results.response[0] && results.response[0].contentUrl) {
+      // results.response[0].name;
+      // results.response[0].contentType;
+      // results.response[0].contentUrl;
+      session.dialogData.data.photo = results.response[0].contentUrl;
     }
-    // TODO: Add the image to the post.
-    // TODO: Get the below properties:
-    // in-reply-to
-    // like-of
-    // repost-of
+    next();
   },
   (session, results, next) => {
     getSyndication(session).then((options) => {
@@ -174,10 +193,16 @@ bot.dialog('/advanced-post', [
     });
   },
   (session, results, next) => {
-    if (results && results.response && results.results != 'skip') {
-      session.dialogData.data['mp-syndicate-to'] = results.response.split(' ');
+    if (results && results.response && results.response != 'skip') {
+      session.dialogData.data['mp-syndicate-to'] = cleanText(results.response, session.message.source).split(' ');
     }
-    session.send(JSON.stringify(session.dialogData.data));
+    session.send('Sending post');
+    micropub(session, session.dialogData.data).then((card) => {
+      session.endDialog(card);
+    }).catch((err) => {
+      session.send('Uh oh. There was an error sending that');
+      session.endDialog(JSON.stringify(err));
+    });
   }
 ]);
 
@@ -272,6 +297,7 @@ bot.dialog('/help', [
           .title('PostrChild Help')
           .buttons([
             builder.CardAction.imBack(session, 'post', 'Post a simple note'),
+            builder.CardAction.imBack(session, 'advancedpost', 'Post an advanced post'),
             builder.CardAction.imBack(session, 'auth', 'Authenticate with your micropub endpoint'),
             builder.CardAction.imBack(session, 'help', 'Show this help message'),
           ])
@@ -346,10 +372,10 @@ function cleanUrl(url) {
   return url;
 }
 
-function cleanMessage(message) {
-  if (message.source && message.source == 'slack') {
-    message.text = message.text.replace('<', '');
-    message.text = message.text.replace('>', '');
+function cleanText(text, service) {
+  if ('slack' == service) {
+    text = text.replace('<', '');
+    text = text.replace('>', '');
   }
-  return message;
+  return text;
 }

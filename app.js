@@ -53,12 +53,13 @@ app.get('/auth', (req, res) => {
 
 const regexes = {
   quickPost: /^(post\s)/i,
+  quickJournal: /^(journal\s)/i,
 };
 
 bot.dialog('/', new builder.IntentDialog()
   .matchesAny([/^authenticate/i, /^authorize/i, /^auth/i], '/authenticate')
-  .matches(regexes.quickPost, '/instant-note')
-  .matches(/^post/i, '/instant-note')
+  .matchesAny([regexes.quickPost, /^post/i], '/instant-note')
+  .matchesAny([regexes.quickJournal, /^journal/i], '/instant-journal')
   .matches(/^advancedpost/i, '/advanced-post')
   .matches(/^help/i, '/help')
   .onDefault(builder.DialogAction.send("I'm sorry. I didn't understand."))
@@ -81,7 +82,7 @@ bot.dialog('/instant-note', [
   },
   (session, results, next) => {
     if (results.response) {
-      session.dialogData.content = results.response;
+      session.dialogData.content = cleanText(results.response, session.message.source);
     }
     if (session.dialogData.content.length > 140) {
       const extraLength = session.dialogData.content.length - 140;
@@ -105,6 +106,39 @@ bot.dialog('/instant-note', [
         session.endDialog(JSON.stringify(err));
       });
     }
+  }
+]);
+
+bot.dialog('/instant-journal', [
+  (session, args, next) => {
+    if (!session.userData.micropub || !session.userData.accessToken) {
+      session.send('Whoa you dont seem to have an access token saved.');
+      session.endDialog('Just type "authenticate" to get started');
+    } else {
+      if (session.message.text && session.message.text.match(regexes.quickJournal)) {
+        let text = session.message.text.replace(regexes.quickJournal, '');
+        session.dialogData.content = cleanText(text, session.message.source);
+        next();
+      } else {
+        builder.Prompts.text(session, 'What do you want to journal?');
+      }
+    }
+  },
+  (session, results) => {
+    if (results.response) {
+      session.dialogData.content = cleanText(results.response, session.message.source);
+    }
+    session.send('Sending journal entry');
+    micropub(session, {
+      h: 'entry',
+      content: session.dialogData.content,
+      category: ['journal', 'private'],
+    }).then((card) => {
+      session.endDialog(card);
+    }).catch((err) => {
+      session.send('Uh oh. There was an error sending that');
+      session.endDialog(JSON.stringify(err));
+    });
   }
 ]);
 
@@ -297,6 +331,7 @@ bot.dialog('/help', [
           .title('PostrChild Help')
           .buttons([
             builder.CardAction.imBack(session, 'post', 'Post a simple note'),
+            builder.CardAction.imBack(session, 'journal', 'Post a simple note with the categories journal and private'),
             builder.CardAction.imBack(session, 'advancedpost', 'Post an advanced post'),
             builder.CardAction.imBack(session, 'auth', 'Authenticate with your micropub endpoint'),
             builder.CardAction.imBack(session, 'help', 'Show this help message'),

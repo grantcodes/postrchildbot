@@ -62,6 +62,7 @@ bot.dialog('/', new builder.IntentDialog()
   .matchesAny([regexes.quickJournal, /^journal/i], '/instant-journal')
   .matches(/^advancedpost/i, '/advanced-post')
   .matches(/^help/i, '/help')
+  .matches(/^info/i, '/info')
   .onDefault(builder.DialogAction.send("I'm sorry. I didn't understand."))
 );
 
@@ -339,6 +340,16 @@ bot.dialog('/help', [
       ]);
     session.send(helpCard);
     session.endDialog('Or to quickly post a note just prepend your content with the post keyword and it will be posted instantly (post ****)');
+  },
+]);
+
+bot.dialog('/info', [
+  (session) => {
+    session.send('Let me tell you a little bit about myself.');
+    session.send('I am a chatbot developed by Grant Richmond - https://grant.codes');
+    session.send('I am built in nodejs and run on the Microsoft BotFramework.');
+    session.send('You can see my source code and contribute improvements and fixes on GitHub https://github.com/terminalpixel/postrchildbot');
+    session.endDialog('You might find a little more information on my website: https://postrchild.tpxl.io');
   },
 ]);
 

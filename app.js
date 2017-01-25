@@ -145,12 +145,17 @@ bot.dialog('/instant-journal', [
 
 bot.dialog('/advanced-post', [
   (session, next) => {
-    session.dialogData.data = {};
-    session.dialogData.source = false;
-    if (session.message && session.message.source) {
-      session.dialogData.source = session.message.source;
+    if (!session.userData.micropub || !session.userData.accessToken) {
+      session.send('Whoa you dont seem to have an access token saved 🔐.');
+      session.endDialog('Just type "authenticate" to get started');
+    } else {
+      session.dialogData.data = {};
+      session.dialogData.source = false;
+      if (session.message && session.message.source) {
+        session.dialogData.source = session.message.source;
+      }
+      builder.Prompts.choice(session, 'What sort of entry are you creating?', ['entry', 'card', 'event', 'cite']);
     }
-    builder.Prompts.choice(session, 'What sort of entry are you creating?', ['entry', 'card', 'event', 'cite']);
   },
   (session, results, next) => {
     session.dialogData.data.h = results.response.entity;

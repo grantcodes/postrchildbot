@@ -63,13 +63,13 @@ bot.dialog('/', new builder.IntentDialog()
   .matches(/^advancedpost/i, '/advanced-post')
   .matches(/^help/i, '/help')
   .matches(/^info/i, '/info')
-  .onDefault(builder.DialogAction.send("I'm sorry. I didn't understand."))
+  .onDefault(builder.DialogAction.send("🤷‍ I'm sorry. I didn't understand."))
 );
 
 bot.dialog('/instant-note', [
   (session, args, next) => {
     if (!session.userData.micropub || !session.userData.accessToken) {
-      session.send('Whoa you dont seem to have an access token saved.');
+      session.send('Whoa you dont seem to have an access token saved 🔐.');
       session.endDialog('Just type "authenticate" to get started');
     } else {
       if (session.message.text && session.message.text.match(regexes.quickPost)) {
@@ -77,7 +77,7 @@ bot.dialog('/instant-note', [
         session.dialogData.content = cleanText(text, session.message.source);
         next();
       } else {
-        builder.Prompts.text(session, 'What do you want to post?');
+        builder.Prompts.text(session, 'What do you want to post? 💬');
       }
     }
   },
@@ -87,23 +87,23 @@ bot.dialog('/instant-note', [
     }
     if (session.dialogData.content.length > 140) {
       const extraLength = session.dialogData.content.length - 140;
-      builder.Prompts.confirm(session, 'Whoa this post is ' + extraLength +' characters too long for twitter. Is that ok?');
+      builder.Prompts.confirm(session, 'Whoa 😵 this post is ' + extraLength +' characters too long for twitter. Is that ok?');
     } else {
       next();
     }
   },
   (session, results) => {
     if (results.response === false) {
-      session.endDialog('Ok I have cancelled that post. Feel free to try again');
+      session.endDialog('Ok I have cancelled that post 🗑. Feel free to try again');
     } else {
-      session.send('Sending post');
+      session.send('Sending post ✉️');
       micropub(session, {
         h: 'entry',
         content: session.dialogData.content,
       }).then((card) => {
         session.endDialog(card);
       }).catch((err) => {
-        session.send('Uh oh. There was an error sending that');
+        session.send('Uh oh 😯. There was an error sending that');
         session.endDialog(JSON.stringify(err));
       });
     }
@@ -113,7 +113,7 @@ bot.dialog('/instant-note', [
 bot.dialog('/instant-journal', [
   (session, args, next) => {
     if (!session.userData.micropub || !session.userData.accessToken) {
-      session.send('Whoa you dont seem to have an access token saved.');
+      session.send('Whoa you dont seem to have an access token saved 🔐.');
       session.endDialog('Just type "authenticate" to get started');
     } else {
       if (session.message.text && session.message.text.match(regexes.quickJournal)) {
@@ -121,7 +121,7 @@ bot.dialog('/instant-journal', [
         session.dialogData.content = cleanText(text, session.message.source);
         next();
       } else {
-        builder.Prompts.text(session, 'What do you want to journal?');
+        builder.Prompts.text(session, 'What do you want to journal 📝?');
       }
     }
   },
@@ -129,7 +129,7 @@ bot.dialog('/instant-journal', [
     if (results.response) {
       session.dialogData.content = cleanText(results.response, session.message.source);
     }
-    session.send('Sending journal entry');
+    session.send('Sending journal entry ✉️');
     micropub(session, {
       h: 'entry',
       content: session.dialogData.content,
@@ -137,7 +137,7 @@ bot.dialog('/instant-journal', [
     }).then((card) => {
       session.endDialog(card);
     }).catch((err) => {
-      session.send('Uh oh. There was an error sending that');
+      session.send('Uh oh 😯. There was an error sending that');
       session.endDialog(JSON.stringify(err));
     });
   }
@@ -172,7 +172,7 @@ bot.dialog('/advanced-post', [
     if (results && results.response && results.response != 'skip') {
       session.dialogData.data.content = cleanText(results.response, session.dialogData.source);
     }
-    builder.Prompts.time(session, 'Add published time (you can say now)');
+    builder.Prompts.time(session, 'Add published time 🕐 (you can say now)');
   },
   (session, results, next) => {
     if (results.response) {
@@ -190,23 +190,23 @@ bot.dialog('/advanced-post', [
     if (results && results.response && results.response != 'skip') {
       session.dialogData.data['in-reply-to'] = cleanUrl(results.response);
     }
-    builder.Prompts.text(session, 'Add like-of (or skip)');
+    builder.Prompts.text(session, 'Add like-of 👍 (or skip)');
   },
   (session, results, next) => {
     if (results && results.response && results.response != 'skip') {
       session.dialogData.data['like-of'] = cleanUrl(results.response);
     }
-    builder.Prompts.text(session, 'Add repost-of (or skip)');
+    builder.Prompts.text(session, 'Add repost-of 🔁 (or skip)');
   },
   (session, results, next) => {
     if (results && results.response && results.response != 'skip') {
       session.dialogData.data['repost-of'] = cleanUrl(results.response);
     }
-    builder.Prompts.confirm(session, 'Do you want to add an image?');
+    builder.Prompts.confirm(session, 'Do you want to add an image 📷 ?');
   },
   (session, results, next) => {
     if (results && results.response) {
-      builder.Prompts.attachment(session, 'Attach an image');
+      builder.Prompts.attachment(session, 'Attach an image 🔗');
     } else {
       next();
     }
@@ -235,7 +235,7 @@ bot.dialog('/advanced-post', [
     micropub(session, session.dialogData.data).then((card) => {
       session.endDialog(card);
     }).catch((err) => {
-      session.send('Uh oh. There was an error sending that');
+      session.send('Uh oh 😯. There was an error sending that');
       session.endDialog(JSON.stringify(err));
     });
   }
@@ -243,7 +243,7 @@ bot.dialog('/advanced-post', [
 
 bot.dialog('/authenticate', [
   (session) => {
-    session.send('Hello there! Lets get started with authenticating me with your site');
+    session.send('Hello there 🙋‍! Lets get started with authenticating me with your site');
     builder.Prompts.text(session, 'What is your domain?');
   },
   (session, results) => {
@@ -252,10 +252,10 @@ bot.dialog('/authenticate', [
     request.get(userUrl, (err, response, body) => {
       if (err) {
         console.log(err);
-        session.endDialog('There was an error accessing your site');
+        session.endDialog('There was an error accessing your site 😔');
       }
       if (!body) {
-        session.endDialog('Your site did not return a body');
+        session.endDialog('Your site did not return a body 😑');
       }
 
       Microformats.get({
@@ -263,7 +263,7 @@ bot.dialog('/authenticate', [
       }, (err, mfData) => {
         if (err) {
           console.log(err);
-          session.endDialog('There was an error getting your microformats data');
+          session.endDialog('There was an error getting your microformats data 😑');
         }
 
         if (mfData && mfData.rels && mfData.rels.authorization_endpoint && mfData.rels.token_endpoint && mfData.rels.micropub) {
@@ -280,8 +280,8 @@ bot.dialog('/authenticate', [
           };
 
           var authUrl = mfData.rels.authorization_endpoint + '?' + qs.stringify(authParams);
-          session.send(`Ok visit this link to authorize me: ${authUrl}`);
-          builder.Prompts.text(session, 'Paste the code you get back to me');
+          session.send(`Ok visit this link to authorize me 🔏: ${authUrl}`);
+          builder.Prompts.text(session, 'Paste the code you get back to me ');
         } else {
           session.endDialog('Your site seems to be missing a required endpoint');
         }
@@ -302,30 +302,30 @@ bot.dialog('/authenticate', [
     }, (err, response, body) => {
       if (err) {
         console.log(err);
-        session.endDialog('There was an error verifying your code.');
+        session.endDialog('There was an error verifying your code 😔.');
       }
 
       if (response && response.statusCode !== 200) {
         console.log(response.body);
-        session.send('There was an error verifying your code:');
+        session.send('There was an error verifying your code 😔:');
         session.endDialog(response.body);
       }
 
       var bodyData = qs.parse(body);
 
       if (!bodyData.me) {
-        session.endDialog('Malformed response from authorization server.');
+        session.endDialog('Malformed response from authorization server 😔.');
       }
 
       session.userData.accessToken = bodyData.access_token;
-      session.endDialog('Ok I am now authenticated and ready to send micropub requests');
+      session.endDialog('Ok I am now authenticated and ready to send micropub requests 🎉');
     });
   }
 ]);
 
 bot.dialog('/help', [
   (session) => {
-    session.send('Here\'s what I can do:');
+    session.send('Here\'s what I can do ℹ:');
     const helpCard = new builder.Message(session)
       .attachments([
         new builder.HeroCard(session)
@@ -346,9 +346,9 @@ bot.dialog('/help', [
 bot.dialog('/info', [
   (session) => {
     session.send('Let me tell you a little bit about myself.');
-    session.send('I am a chatbot developed by Grant Richmond - https://grant.codes');
-    session.send('I am built in nodejs and run on the Microsoft BotFramework.');
-    session.send('You can see my source code and contribute improvements and fixes on GitHub https://github.com/terminalpixel/postrchildbot');
+    session.send('I am a chatbot 🤖 developed by Grant Richmond 👨🏻‍💻 - https://grant.codes');
+    session.send('I am built 🛠 in nodejs and run on the Microsoft BotFramework.');
+    session.send('You can see my source code and contribute improvements and fixes 🏥 on GitHub https://github.com/terminalpixel/postrchildbot');
     session.endDialog('You might find a little more information on my website: https://postrchild.tpxl.io');
   },
 ]);

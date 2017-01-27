@@ -52,8 +52,8 @@ app.get('/auth', (req, res) => {
 //=========================================================
 
 const regexes = {
-  quickPost: /^(post\s)/i,
-  quickJournal: /^(journal\s)/i,
+  quickPost: /^post (.*)/i,
+  quickJournal: /^journal (.*)/i,
 };
 
 bot.dialog('/', new builder.IntentDialog()
@@ -82,8 +82,8 @@ bot.dialog('/instant-note', [
       session.send('Whoa you dont seem to have an access token saved 🔐.');
       session.endDialog('Just type "authenticate" to get started');
     } else {
-      if (session.message.text && session.message.text.match(regexes.quickPost)) {
-        let text = session.message.text.replace(regexes.quickPost, '');
+      if (args && args.matched && args.matched[1] && args.matched[1].trim()) {
+        let text = args.matched[1].trim();
         session.dialogData.content = cleanText(text, session.message.source);
         next();
       } else {
@@ -126,8 +126,8 @@ bot.dialog('/instant-journal', [
       session.send('Whoa you dont seem to have an access token saved 🔐.');
       session.endDialog('Just type "authenticate" to get started');
     } else {
-      if (session.message.text && session.message.text.match(regexes.quickJournal)) {
-        let text = session.message.text.replace(regexes.quickJournal, '');
+      if (args && args.matched && args.matched[1] && args.matched[1].trim()) {
+        let text = args.matched[1].trim();
         session.dialogData.content = cleanText(text, session.message.source);
         next();
       } else {

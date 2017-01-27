@@ -57,6 +57,16 @@ const regexes = {
 };
 
 bot.dialog('/', new builder.IntentDialog()
+  .onBegin((session, args, next) => {
+    session.send('Hello 🙋');
+    session.send('I am the PostrChild bot 🤖 I am here to help you post to your micropub endpoint');
+    if (!session.userData.micropub || !session.userData.accessToken) {
+      session.send('It looks like your not set up to post yet let\'s get started with that');
+      session.beginDialog('/authenticate');
+    } else {
+      session.send('It looks like you\'re already good to go 🙂 Just type "help" to see what I can do');
+    }
+  })
   .matchesAny([/^authenticate/i, /^authorize/i, /^auth/i], '/authenticate')
   .matchesAny([regexes.quickPost, /^post/i], '/instant-note')
   .matchesAny([regexes.quickJournal, /^journal/i], '/instant-journal')
@@ -248,12 +258,12 @@ bot.dialog('/advanced-post', [
 
 bot.dialog('/authenticate', [
   (session) => {
-    session.send('Hello there 🙋‍! Lets get started with authenticating me with your site');
+    session.send('Lets get started with authenticating me with your site');
     builder.Prompts.text(session, 'What is your domain?');
   },
   (session, results) => {
     const userUrl = cleanUrl(results.response);
-    session.send(`Ok I'll try to authenticate at ${results.response}`);
+    session.send(`Ok I'll try to authenticate at ${userUrl}`);
     request.get(userUrl, (err, response, body) => {
       if (err) {
         console.log(err);
@@ -417,7 +427,7 @@ function cleanUrl(url) {
   if (url.charAt(0) == '<') {
     url = url.substr(1);
   }
-  if (url.charAt(url.length - 1 == '>')) {
+  if (url.charAt(url.length - 1) == '>') {
     url = url.substring(0, url.length - 1);
   }
   return url;

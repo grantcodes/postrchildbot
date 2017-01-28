@@ -383,19 +383,30 @@ function micropub(session, data) {
         reject(err);
       } else {
         let url = '';
-        if (httpResponse && httpResponse.headers && httpResponse.headers.Location) {
-          url = httpResponse.headers.Location;
+        if (httpResponse && httpResponse.headers) {
+          if (httpResponse.headers.Location) {
+            url = httpResponse.headers.Location;
+          } else if (httpResponse.headers.location) {
+            url = httpResponse.headers.location;
+          }
         }
-        const card = new builder.Message(session)
+
+        let card = new builder.HeroCard(session).title('Post Successful');
+        if (data.name) {
+          card.subtitle(data.name);
+        }
+        if (data.content) {
+          card.text(data.content);
+        }
+        if (url) {
+          card.tap(builder.CardAction.openUrl(session, url));
+        }
+
+        const response = new builder.Message(session)
           .textFormat(builder.TextFormat.xml)
-          .attachments([
-            new builder.HeroCard(session)
-              .title('Post Successful')
-              .subtitle(data.name)
-              .text(data.content)
-              .tap(builder.CardAction.openUrl(session, url))
-          ]);
-        fulfill(card);
+          .attachments([card]);
+
+        fulfill(response);
       }
     });
   });

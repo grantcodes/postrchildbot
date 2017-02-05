@@ -7,6 +7,7 @@ const builder = require('botbuilder');
 const request = require('request');
 const Microformats = require('microformat-node');
 const qs = require('querystring');
+const emoji = require('node-emoji');
 
 // Setup express server for html site
 const app = express();
@@ -445,6 +446,7 @@ function cleanUrl(url) {
 }
 
 function cleanText(text, service) {
+  text = emoji.emojify(text);
   if ('slack' == service) {
     text = text.replace('<', '');
     text = text.replace('>', '');

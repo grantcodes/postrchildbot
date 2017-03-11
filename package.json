@@ -12,10 +12,10 @@
     "body-parser": "^1.15.2",
     "botbuilder": "^3.5.1",
     "express": "^4.14.0",
-    "microformat-node": "^2.0.1",
+    "micropub-helper": "0.0.3",
     "node-emoji": "^1.5.1",
     "nunjucks": "^3.0.0",
-    "request": "^2.79.0",
+    "request": "^2.81.0",
     "restify": "^4.3.0",
     "restify-plugins": "^1.5.0"
   }

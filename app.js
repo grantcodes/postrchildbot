@@ -109,7 +109,7 @@ bot.dialog('/instant-note', [
       h: 'entry',
       content: session.dialogData.data.content,
     }, 'form').then((url) => {
-      const card = getSuccessCard(session, url, session.dialogData.content);
+      const card = getSuccessCard(session, url, session.dialogData.data.content);
       session.endDialog(card);
     }).catch((err) => {
       session.send('Uh oh 😯. There was an error sending that');
@@ -142,7 +142,7 @@ bot.dialog('/instant-journal', [
       content: session.dialogData.data.content,
       category: ['journal', 'private'],
     }, 'form').then((url) => {
-      const card = getSuccessCard(session, url, session.dialogData.content);
+      const card = getSuccessCard(session, url, session.dialogData.data.content);
       session.endDialog(card);
     }).catch((err) => {
       session.send('Uh oh 😯. There was an error sending that');

@@ -64,6 +64,7 @@ app.get('/auth', (req, res) => {
 const regexes = {
   quickPost: /^post (.*)/i,
   quickJournal: /^journal (.*)/i,
+  url: /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/,
 };
 
 bot.dialog('/', new builder.IntentDialog()
@@ -84,6 +85,7 @@ bot.dialog('/', new builder.IntentDialog()
   .matches(/^photo/i, '/photo')
   .matches(/^help/i, '/help')
   .matches(/^info/i, '/info')
+  .matches(regexes.url, '/shared-url')
   .onDefault(builder.DialogAction.send("🤷‍ I'm sorry. I didn't understand."))
 );
 
@@ -190,6 +192,62 @@ bot.dialog('/photo', [
           session.endDialog(JSON.stringify(err));
         });
       })
+  }
+]);
+
+bot.dialog('/shared-url', [
+  (session, results, next) => {
+    if (!session.userData.micropub || !session.userData.accessToken) {
+      session.send('Whoa you dont seem to have an access token saved 🔐.');
+      session.endDialog('Just type "authenticate" to get started');
+    } else {
+      if (results && results.matched && results.matched[0] && results.matched[0].trim()) {
+        let text = results.matched[0].trim();
+        session.dialogData.sharedUrl = cleanUrl(text, session.message.source);
+        session.send('Looks like you want to do something with the url "' + session.dialogData.sharedUrl + '" 🤷‍');
+        builder.Prompts.choice(session, 'What do you want to do?', ['like-of', 'repost-of', 'in-reply-to', 'cancel']);
+      } else {
+        session.endDialog('I thought that might be a url but I can\'t quite understand it');
+      }
+    }
+  },
+  (session, results, next) => {
+    if (results && results.response && results.response.entity) {
+      const action = results.response.entity;
+      if ('cancel' == action) {
+        session.endDialog('Ok I have cancelled that');
+      } else if ('like-of' == action) {
+        session.dialogData.data = {
+          h: 'entry',
+          'like-of': session.dialogData.sharedUrl,
+        };
+      } else if ('repost-of' == action) {
+        session.dialogData.data = {
+          h: 'entry',
+          'repost-of': session.dialogData.sharedUrl,
+        };
+      } else if ('in-reply-to' == action) {
+        session.endDialog('I can\'t handle that yet. But soon...');
+      }
+      next()
+    } else {
+      session.endDialog('Uh oh, something went wrong there 💔')
+    }
+  },
+  (session, results, next) => {
+    session.sendTyping();
+    micropub.options.micropubEndpoint = session.userData.micropub;
+    micropub.options.token = session.userData.accessToken;
+    console.log('would send');
+    console.log(session.dialogData.data);
+    session.endDialog('Done');
+    // micropub.create(session.dialogData.data, 'form').then((url) => {
+    //   const card = getSuccessCard(session, url, session.dialogData.data.content, session.dialogData.data.name);
+    //   session.endDialog(card);
+    // }).catch((err) => {
+    //   session.send('Uh oh 😯. There was an error sending that');
+    //   session.endDialog(JSON.stringify(err));
+    // });
   }
 ]);
 

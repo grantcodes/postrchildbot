@@ -9,7 +9,7 @@ const request = require('request');
 const Micropub = require('micropub-helper');
 const cleanText = require('./lib/clean-text');
 const cleanUrl = require('./lib/clean-url');
-const micropubPromts = require('./lib/temp');
+const getMicropubPromts = require('./lib/temp');
 
 // Setup express server for html site
 const app = express();
@@ -31,6 +31,7 @@ let micropub = new Micropub({
   redirectUri: appConfig.url + '/auth',
   state: 'Super secret value',
 });
+const micropubPromts = getMicropubPromts(micropub);
 
 app.listen(appConfig.port, () => {
   console.log('%s listening to %s', app.name, appConfig.url);

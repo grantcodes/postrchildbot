@@ -12,7 +12,7 @@
     "body-parser": "^1.15.2",
     "botbuilder": "^3.5.1",
     "express": "^4.14.0",
-    "micropub-helper": "0.0.3",
+    "micropub-helper": "^0.0.4",
     "node-emoji": "^1.5.1",
     "nunjucks": "^3.0.0",
     "request": "^2.81.0",

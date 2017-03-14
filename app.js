@@ -69,13 +69,12 @@ const regexes = {
 
 bot.dialog('/', new builder.IntentDialog()
   .onBegin((session, args, next) => {
-    session.send('Hello 🙋');
-    session.send('I am the PostrChild bot 🤖 I am here to help you post to your micropub endpoint');
     if (!session.userData.micropub || !session.userData.accessToken) {
-      session.send('It looks like your not set up to post yet let\'s get started with that');
+      session.send('Hello 🙋');
+      session.send('I am the PostrChild bot 🤖 I am here to help you post to your micropub endpoint');
       session.beginDialog('/authenticate');
     } else {
-      session.send('It looks like you\'re already good to go 🙂 Just type "help" to see what I can do');
+      next();
     }
   })
   .matchesAny([/^authenticate/i, /^authorize/i, /^auth/i], '/authenticate')
@@ -86,19 +85,7 @@ bot.dialog('/', new builder.IntentDialog()
   .matches(/^help/i, '/help')
   .matches(/^info/i, '/info')
   .matches(regexes.url, '/shared-url')
-  .onDefault((session, args, next) => {
-    console.log('Did not understand this request:');
-    console.log(session.message);
-    try {
-      if (session.message.sourceEvent.message.attachments[0]) {
-        console.log('Message has an attachment:');
-        console.log(session.message.sourceEvent.message.attachments[0]);
-      }
-    } catch (err) {
-      // No need to do anything here
-    }
-    session.endDialog("🤷‍ I'm sorry. I didn't understand.")
-  })
+  .onDefault('/not-understood')
 );
 
 bot.dialog('/instant-note', [
@@ -213,9 +200,15 @@ bot.dialog('/shared-url', [
       session.send('Whoa you dont seem to have an access token saved 🔐.');
       session.endDialog('Just type "authenticate" to get started');
     } else {
-      if (results && results.matched && results.matched[0] && results.matched[0].trim()) {
+      let url = '';
+      if (typeof results == 'string') {
+        url = results;
+      } else if (results && results.matched && results.matched[0] && results.matched[0].trim()) {
         let text = results.matched[0].trim();
-        session.dialogData.sharedUrl = cleanUrl(text, session.message.source);
+        url = cleanUrl(text, session.message.source);
+      }
+      if (url) {
+        session.dialogData.sharedUrl = url;
         session.send('Looks like you want to do something with the url "' + session.dialogData.sharedUrl + '" 🤷‍');
         builder.Prompts.choice(session, 'What do you want to do?', ['like-of', 'repost-of', 'in-reply-to', 'cancel']);
       } else {
@@ -241,7 +234,7 @@ bot.dialog('/shared-url', [
       } else if ('in-reply-to' == action) {
         session.endDialog('I can\'t handle that yet. But soon...');
       }
-      next()
+      next();
     } else {
       session.endDialog('Uh oh, something went wrong there 💔')
     }
@@ -250,16 +243,13 @@ bot.dialog('/shared-url', [
     session.sendTyping();
     micropub.options.micropubEndpoint = session.userData.micropub;
     micropub.options.token = session.userData.accessToken;
-    console.log('would send');
-    console.log(session.dialogData.data);
-    session.endDialog('Done');
-    // micropub.create(session.dialogData.data, 'form').then((url) => {
-    //   const card = getSuccessCard(session, url, session.dialogData.data.content, session.dialogData.data.name);
-    //   session.endDialog(card);
-    // }).catch((err) => {
-    //   session.send('Uh oh 😯. There was an error sending that');
-    //   session.endDialog(JSON.stringify(err));
-    // });
+    micropub.create(session.dialogData.data, 'form').then((url) => {
+      const card = getSuccessCard(session, url, session.dialogData.data.content, session.dialogData.data.name);
+      session.endDialog(card);
+    }).catch((err) => {
+      session.send('Uh oh 😯. There was an error sending that');
+      session.endDialog(JSON.stringify(err));
+    });
   }
 ]);
 
@@ -332,6 +322,26 @@ bot.dialog('/authenticate', [
       .catch((err) => session.endDialog(err));
   }
 ]);
+
+bot.dialog('/not-understood', new builder.SimpleDialog((session, results) => {
+  console.log('Did not understand this request:');
+  console.log(session.message);
+  try {
+    if (session.message.sourceEvent.message.attachments[0]) {
+      let attachment = session.message.sourceEvent.message.attachments[0];
+      console.log('Message has an attachment:');
+      console.log(attachment);
+      if (attachment.url) {
+        const sharedUrl = cleanUrl(attachment.url);
+        session.beginDialog('/shared-url', sharedUrl);
+      } else {
+        throw 'not understood';
+      }
+    }
+  } catch (err) {
+    session.endDialog("🤷‍ I'm sorry. I didn't understand.")
+  }
+}));
 
 bot.dialog('/help', [
   (session) => {

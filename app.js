@@ -86,7 +86,11 @@ bot.dialog('/', new builder.IntentDialog()
   .matches(/^help/i, '/help')
   .matches(/^info/i, '/info')
   .matches(regexes.url, '/shared-url')
-  .onDefault(builder.DialogAction.send("🤷‍ I'm sorry. I didn't understand."))
+  .onDefault((session, args, next) => {
+    console.log('Did not understand this request:');
+    console.log(session.message);
+    session.endDialog("🤷‍ I'm sorry. I didn't understand.")
+  })
 );
 
 bot.dialog('/instant-note', [

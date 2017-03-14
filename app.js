@@ -89,6 +89,14 @@ bot.dialog('/', new builder.IntentDialog()
   .onDefault((session, args, next) => {
     console.log('Did not understand this request:');
     console.log(session.message);
+    try {
+      if (session.message.sourceEvent.message.attachments[0]) {
+        console.log('Message has an attachment:');
+        console.log(session.message.sourceEvent.message.attachments[0]);
+      }
+    } catch (err) {
+      // No need to do anything here
+    }
     session.endDialog("🤷‍ I'm sorry. I didn't understand.")
   })
 );

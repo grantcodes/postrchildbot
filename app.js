@@ -162,6 +162,9 @@ bot.dialog('/photo', [
       session.dialogData.data = {
         h: 'entry',
       };
+      if (typeof args == 'string') {
+        session.dialogData.data.photo = args;
+      }
       next();
     }
   },
@@ -327,7 +330,13 @@ bot.dialog('/not-understood', new builder.SimpleDialog((session, results) => {
   console.log('Did not understand this request:');
   console.log(session.message);
   try {
-    if (session.message.sourceEvent.message.attachments[0]) {
+    if (session.message.attachments && session.message.attachments[0]) {
+      let attachment = session.message.attachments[0];
+      if (attachment.contentType && attachment.contentUrl && attachment.contentType.indexOf('image') > -1) {
+        const sharedPhoto = cleanUrl(attachment.contentUrl);
+        session.beginDialog('/photo', sharedPhoto);
+      }
+     } else if (session.message.sourceEvent.message.attachments[0]) {
       let attachment = session.message.sourceEvent.message.attachments[0];
       console.log('Message has an attachment:');
       console.log(attachment);

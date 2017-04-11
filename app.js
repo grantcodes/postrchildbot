@@ -82,6 +82,7 @@ bot.dialog('/', new builder.IntentDialog()
   .matchesAny([regexes.quickJournal, /^journal/i], '/instant-journal')
   .matches(/^advancedpost/i, '/advanced-post')
   .matches(/^photo/i, '/photo')
+  .matches(/^rsvp/i, '/rsvp')
   .matches(/^help/i, '/help')
   .matches(/^info/i, '/info')
   .matches(regexes.url, '/shared-url')
@@ -292,6 +293,37 @@ bot.dialog('/advanced-post', [
       session.send('Uh oh 😯. There was an error sending that');
       session.endDialog(JSON.stringify(err));
     });
+  }
+]);
+
+bot.dialog('/rsvp', [
+  (session, results, next) => {
+    if (!session.userData.micropub || !session.userData.accessToken) {
+      session.send('Whoa you dont seem to have an access token saved 🔐.');
+      session.endDialog('Just type "authenticate" to get started');
+    } else {
+      session.dialogData.data = {
+        h: 'entry',
+      };
+      next();
+    }
+  },
+  ...micropubPromts.inReplyTo,
+  (session, results, next) => {
+    session.sendTyping();
+    micropub.options.micropubEndpoint = session.userData.micropub;
+    micropub.options.token = session.userData.accessToken;
+    if (session.dialogData.data.rsvp && session.dialogData.data['in-reply-to']) {
+      micropub.create(session.dialogData.data, 'form').then((url) => {
+        const card = getSuccessCard(session, url, 'RSVP sent to ' + session.dialogData.data['in-reply-to']);
+        session.endDialog(card);
+      }).catch((err) => {
+        session.send('Uh oh 😯. There was an error sending that');
+        session.endDialog(JSON.stringify(err));
+      });
+    } else {
+      session.endDialog('Oh dear 😞. RSVP was missing in-reply-to or rsvp option');
+    }
   }
 ]);
 

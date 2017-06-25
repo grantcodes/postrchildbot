@@ -211,7 +211,11 @@ bot.dialog('/shared-url', [
         let text = results.matched[0].trim();
         url = cleanUrl(text, session.message.source);
       }
-      if (url) {
+      if (url && url.indexOf(session.userData.me) > -1) {
+        session.dialogData.sharedUrl = url;
+        session.send('Looks like you want to do with a page on your own domain: "' + session.dialogData.sharedUrl + '" 🤷‍');
+        session.beginDialog('/modify-post', url);
+      } else if (url) {
         session.dialogData.sharedUrl = url;
         session.send('Looks like you want to do something with the url "' + session.dialogData.sharedUrl + '" 🤷‍');
         builder.Prompts.choice(session, 'What do you want to do?', ['like-of', 'repost-of', 'in-reply-to', 'cancel']);
@@ -352,9 +356,80 @@ bot.dialog('/authenticate', [
         console.log(token);
         session.userData.accessToken = token;
         session.userData.micropub = micropub.options.micropubEndpoint;
+        session.userData.me = micropub.options.me;
         session.endDialog('Ok I am now authenticated and ready to send micropub requests 🎉');
       })
       .catch((err) => session.endDialog(err));
+  }
+]);
+
+bot.dialog('/modify-post', [
+  (session, args, next) => {
+    if (!session.userData.micropub || !session.userData.accessToken) {
+      session.send('Whoa you dont seem to have an access token saved 🔐.');
+      session.endDialog('Just type "authenticate" to get started');
+    } else {
+      if (typeof args == 'string') {
+        session.dialogData.url = args;
+      }
+      micropub.options.micropubEndpoint = session.userData.micropub;
+      micropub.options.token = session.userData.accessToken;
+      builder.Prompts.choice(session, 'What do you want to do?', ['update', 'delete', 'undelete', 'cancel']);
+    }
+  },
+  (session, results, next) => {
+    switch (results.response.entity) {
+      case ('delete') : {
+        micropub.delete(session.dialogData.url)
+          .then(res => {
+            session.endDialog('Ok that\'s in the trash now 🗑');
+          })
+          .catch(err => {
+            session.endDialog('Uh oh 😯. There was an error removing that');
+          });
+        break;
+      } case ('undelete') : {
+        micropub.undelete(session.dialogData.url)
+          .then(res => {
+             session.endDialog('I have risen that post from the dead now! 👹');
+          })
+          .catch(err => {
+             session.endDialog('My powers are weak. I couldn\'t resurrect that post. 🥀');
+          });
+        break;
+      } case ('update') : {
+        session.dialogData.data = {};
+        session.send('Cool, lets make some ch-ch-changes 💇');
+        next();
+        break;
+      } default : {
+        session.endDialog('Uh oh 😯. There was an error somewhere');
+      }
+    }
+  },
+  ...micropubPromts.name,
+  ...micropubPromts.summary,
+  ...micropubPromts.content,
+  ...micropubPromts.category,
+  ...micropubPromts.photoConfirm,
+  (session, results, next) => {
+    session.sendTyping();
+    var updateObject = {
+      replace: {},
+    };
+    for (var property in session.dialogData.data) {
+      if (Array.isArray(session.dialogData.data[property])) {
+        updateObject.replace[property] = session.dialogData.data[property];
+      } else {
+        updateObject.replace[property] = [session.dialogData.data[property]];
+      }
+    }
+
+    micropub.update(session.dialogData.url, updateObject).then((res) => {
+      session.endDialog('Post updated 👍');
+    }).catch((err) => {
+      session.endDialog('Uh oh 😯. There was an error sending that');
+    });
   }
 ]);
 

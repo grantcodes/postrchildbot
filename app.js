@@ -72,7 +72,7 @@ bot.dialog('/', new builder.IntentDialog()
     if (!session.userData.micropub || !session.userData.accessToken) {
       session.send('Hello 🙋');
       session.send('I am the PostrChild bot 🤖 I am here to help you post to your micropub endpoint');
-      session.beginDialog('/authenticate');
+      replace.replaceDialog('/authenticate');
     } else {
       next();
     }
@@ -116,7 +116,7 @@ bot.dialog('/instant-note', [
       session.endDialog(card);
     }).catch((err) => {
       session.send('Uh oh 😯. There was an error sending that');
-      session.endDialog(JSON.stringify(err));
+      session.endDialog(err.message);
     });
   }
 ]);
@@ -149,7 +149,7 @@ bot.dialog('/instant-journal', [
       session.endDialog(card);
     }).catch((err) => {
       session.send('Uh oh 😯. There was an error sending that');
-      session.endDialog(JSON.stringify(err));
+      session.endDialog(err.message);
     });
   }
 ]);
@@ -192,7 +192,7 @@ bot.dialog('/photo', [
           session.endDialog(card);
         }).catch((err) => {
           session.send('Uh oh 😯. There was an error sending that');
-          session.endDialog(JSON.stringify(err));
+          session.endDialog(err.message);
         });
       })
   }
@@ -214,7 +214,8 @@ bot.dialog('/shared-url', [
       if (url && url.indexOf(session.userData.me) > -1) {
         session.dialogData.sharedUrl = url;
         session.send('Looks like you want to do with a page on your own domain: "' + session.dialogData.sharedUrl + '" 🤷‍');
-        session.beginDialog('/modify-post', url);
+        return session.replaceDialog('/modify-post', url);
+        session.endDialog();
       } else if (url) {
         session.dialogData.sharedUrl = url;
         session.send('Looks like you want to do something with the url "' + session.dialogData.sharedUrl + '" 🤷‍');
@@ -240,7 +241,7 @@ bot.dialog('/shared-url', [
           'repost-of': session.dialogData.sharedUrl,
         };
       } else if ('in-reply-to' == action) {
-        session.endDialog('I can\'t handle that yet. But soon...');
+        return session.replaceDialog('/send-reply', { 'in-reply-to': session.dialogData.sharedUrl });
       }
       next();
     } else {
@@ -256,7 +257,32 @@ bot.dialog('/shared-url', [
       session.endDialog(card);
     }).catch((err) => {
       session.send('Uh oh 😯. There was an error sending that');
-      session.endDialog(JSON.stringify(err));
+      session.endDialog(err.message);
+    });
+  }
+]);
+
+bot.dialog('/send-reply', [
+  (session, results, next) => {
+    session.dialogData.data = {
+      h: 'entry',
+      'in-reply-to': results['in-reply-to'],
+    };
+    next();
+  },
+  ...micropubPromts.content,
+  ...micropubPromts.published,
+  ...micropubPromts.photoConfirm,
+  (session, results, next) => {
+    session.sendTyping();
+    micropub.options.micropubEndpoint = session.userData.micropub;
+    micropub.options.token = session.userData.accessToken;
+    micropub.create(session.dialogData.data, 'form').then((url) => {
+      const card = getSuccessCard(session, url, session.dialogData.data.content);
+      session.endDialog(card);
+    }).catch((err) => {
+      session.send('Uh oh 😯. There was an error sending the response');
+      session.endDialog(err.message);
     });
   }
 ]);
@@ -295,7 +321,7 @@ bot.dialog('/advanced-post', [
       session.endDialog(card);
     }).catch((err) => {
       session.send('Uh oh 😯. There was an error sending that');
-      session.endDialog(JSON.stringify(err));
+      session.endDialog(err.message);
     });
   }
 ]);
@@ -323,7 +349,7 @@ bot.dialog('/rsvp', [
         session.endDialog(card);
       }).catch((err) => {
         session.send('Uh oh 😯. There was an error sending that');
-        session.endDialog(JSON.stringify(err));
+        session.endDialog(err.message);
       });
     } else {
       session.endDialog('Oh dear 😞. RSVP was missing in-reply-to or rsvp option');
@@ -346,7 +372,7 @@ bot.dialog('/authenticate', [
         session.send(`Ok visit this link to authorize me 🔏: ${url}`);
         builder.Prompts.text(session, 'Paste the code you get back to me ');
       })
-      .catch((err) => session.endDialog(err));
+      .catch((err) => session.endDialog(err.message));
   },
   (session, results) => {
     const code = results.response;
@@ -359,7 +385,7 @@ bot.dialog('/authenticate', [
         session.userData.me = micropub.options.me;
         session.endDialog('Ok I am now authenticated and ready to send micropub requests 🎉');
       })
-      .catch((err) => session.endDialog(err));
+      .catch((err) => session.endDialog(err.message));
   }
 ]);
 
@@ -441,7 +467,7 @@ bot.dialog('/not-understood', new builder.SimpleDialog((session, results) => {
       let attachment = session.message.attachments[0];
       if (attachment.contentType && attachment.contentUrl && attachment.contentType.indexOf('image') > -1) {
         const sharedPhoto = cleanUrl(attachment.contentUrl);
-        session.beginDialog('/photo', sharedPhoto);
+        session.replaceDialog('/photo', sharedPhoto);
       }
      } else if (session.message.sourceEvent.message.attachments[0]) {
       let attachment = session.message.sourceEvent.message.attachments[0];
@@ -449,7 +475,7 @@ bot.dialog('/not-understood', new builder.SimpleDialog((session, results) => {
       console.log(attachment);
       if (attachment.url) {
         const sharedUrl = cleanUrl(attachment.url);
-        session.beginDialog('/shared-url', sharedUrl);
+        session.replaceDialog('/shared-url', sharedUrl);
       } else {
         throw 'not understood';
       }

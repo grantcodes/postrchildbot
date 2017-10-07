@@ -72,7 +72,7 @@ bot.dialog('/', new builder.IntentDialog()
     if (!session.userData.micropub || !session.userData.accessToken) {
       session.send('Hello 🙋');
       session.send('I am the PostrChild bot 🤖 I am here to help you post to your micropub endpoint');
-      replace.replaceDialog('/authenticate');
+      session.replaceDialog('/authenticate');
     } else {
       next();
     }

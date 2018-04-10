@@ -1,5 +1,3 @@
-'use strict';
-
 const fs = require('fs');
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -661,18 +659,39 @@ bot.dialog('/info', [
 ]);
 
 function getSuccessCard(session, url, text = false, subtitle = false) {
-  let card = new builder.HeroCard(session).title('Post Successful');
+  let card = {
+    contentType: 'application/vnd.microsoft.card.adaptive',
+    content: {
+      type: 'AdaptiveCard',
+      body: [
+        {
+          type: 'TextBlock',
+          text: 'Post Successful',
+          size: 'large',
+        },
+      ],
+      actions: [],
+    },
+  };
   if (url) {
-    card.tap(builder.CardAction.openUrl(session, url));
-  }
-  if (text) {
-    card.text(text);
+    card.content.actions.push({
+      type: 'Action.OpenUrl',
+      url: url,
+      title: 'View Post',
+    });
   }
   if (subtitle) {
-    card.subtitle(subtitle);
+    card.content.body.push({
+      type: 'TextBlock',
+      text: subtitle,
+    });
   }
-  const response = new builder.Message(session)
-    .textFormat(builder.TextFormat.xml)
-    .attachments([card]);
+  if (text) {
+    card.content.body.push({
+      type: 'TextBlock',
+      text: text,
+    });
+  }
+  const response = new builder.Message(session).addAttachment(card);
   return response;
 }

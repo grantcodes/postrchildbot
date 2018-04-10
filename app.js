@@ -8,6 +8,7 @@ const Micropub = require('micropub-helper');
 const cleanText = require('./lib/clean-text');
 const cleanUrl = require('./lib/clean-url');
 const getMicropubPromts = require('./lib/prompts');
+const config = require('./lib/config');
 
 // Setup express server for html site
 const app = express();
@@ -19,26 +20,21 @@ nunjucks.configure('views', {
   express: app,
 });
 
-const appConfig = {
-  port: process.env.port || process.env.PORT || 3978,
-  url: process.env.URL || 'http://localhost:3978',
-};
-
 let micropub = new Micropub({
-  clientId: appConfig.url,
-  redirectUri: appConfig.url + '/auth',
-  state: 'Super secret value',
+  clientId: config.get('url'),
+  redirectUri: config.get('url') + '/auth',
+  state: config.get('secret'),
 });
 const micropubPromts = getMicropubPromts(micropub);
 
-app.listen(appConfig.port, () => {
-  console.log('%s listening to %s', app.name, appConfig.url);
+app.listen(config.get('port'), () => {
+  console.log('%s listening to %s', app.name, config.get('url'));
 });
 
 // Create chat bot
 const connector = new builder.ChatConnector({
-  appId: process.env.MICROSOFT_APP_ID,
-  appPassword: process.env.MICROSOFT_APP_PASSWORD,
+  appId: config.get('appId'),
+  appPassword: config.get('appPassword'),
 });
 const bot = new builder.UniversalBot(connector);
 const intents = new builder.IntentDialog();

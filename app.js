@@ -657,39 +657,29 @@ bot.dialog('/info', [
 ]);
 
 function getSuccessCard(session, url, text = false, subtitle = false) {
-  let card = {
-    contentType: 'application/vnd.microsoft.card.adaptive',
-    content: {
-      type: 'AdaptiveCard',
-      body: [
-        {
-          type: 'TextBlock',
-          text: 'Post Successful',
-          size: 'large',
-        },
-      ],
-      actions: [],
-    },
-  };
-  if (url) {
-    card.content.actions.push({
-      type: 'Action.OpenUrl',
-      url: url,
-      title: 'View Post',
-    });
-  }
+  const response = new builder.Message(session);
+
+  let message = '## Post Successful';
+
   if (subtitle) {
-    card.content.body.push({
-      type: 'TextBlock',
-      text: subtitle,
-    });
+    message += '\n\n ### ' + subtitle;
   }
+
   if (text) {
-    card.content.body.push({
-      type: 'TextBlock',
-      text: text,
-    });
+    message += '\n\n' + text;
   }
-  const response = new builder.Message(session).addAttachment(card);
+
+  if (url) {
+    message += '\n\n' + `[View Post](${url})`;
+    // TODO: Maybe add option to delete it?
+    // response.suggestedActions(
+    //   builder.SuggestedActions.create(session, [
+    //     builder.CardAction.imBack(session, 'action=delete', 'Delete'),
+    //   ]),
+    // );
+  }
+
+  response.text(message);
+
   return response;
 }

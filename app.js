@@ -60,6 +60,8 @@ app.get('/auth', (req, res) => {
 const regexes = {
   quickPost: /^post (.*)/i,
   quickJournal: /^journal (.*)/i,
+  quickDelete: /^delete (.*)/i,
+  quickUpdate: /^update (.*)/i,
   url: /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/,
 };
 
@@ -78,8 +80,10 @@ bot.dialog(
       }
     })
     .matchesAny([/^authenticate/i, /^authorize/i, /^auth/i], '/authenticate')
-    .matchesAny([regexes.quickPost, /^post/i], '/instant-note')
+    .matchesAny([regexes.quickPost, /^post/i, /^note/i], '/instant-note')
     .matchesAny([regexes.quickJournal, /^journal/i], '/instant-journal')
+    .matches(regexes.quickDelete, '/instant-delete')
+    .matches(regexes.quickUpdate, '/instant-update')
     .matches(/^advancedpost/i, '/advanced-post')
     .matches(/^photo/i, '/photo')
     .matches(/^rsvp/i, '/rsvp')
@@ -545,6 +549,72 @@ bot.dialog('/modify-post', [
   },
 ]);
 
+bot.dialog('/instant-delete', [
+  (session, args, next) => {
+    if (!session.userData.micropub || !session.userData.accessToken) {
+      session.send('Whoa you dont seem to have an access token saved 🔐.');
+      session.endDialog('Just type "authenticate" to get started');
+    } else {
+      if (args && args.matched && args.matched[1] && args.matched[1].trim()) {
+        session.sendTyping();
+        let url = args.matched[1].trim();
+        micropub.options.micropubEndpoint = session.userData.micropub;
+        micropub.options.token = session.userData.accessToken;
+        micropub
+          .delete(url)
+          .then(res => session.endDialog("Ok that's in the trash now 🗑"))
+          .catch(err =>
+            session.endDialog('Uh oh 😯. There was an error removing that'),
+          );
+      } else {
+        session.endDialog('Error getting your url');
+      }
+    }
+  },
+]);
+
+bot.dialog('/instant-update', [
+  (session, args, next) => {
+    if (!session.userData.micropub || !session.userData.accessToken) {
+      session.send('Whoa you dont seem to have an access token saved 🔐.');
+      session.endDialog('Just type "authenticate" to get started');
+    } else {
+      session.dialogData.data = {};
+      if (args && args.matched && args.matched[1] && args.matched[1].trim()) {
+        session.dialogData.url = args.matched[1].trim();
+        next();
+      }
+    }
+  },
+  ...micropubPromts.name,
+  ...micropubPromts.summary,
+  ...micropubPromts.content,
+  ...micropubPromts.category,
+  ...micropubPromts.photoConfirm,
+  (session, results, next) => {
+    session.sendTyping();
+    var updateObject = {
+      replace: {},
+    };
+    for (var property in session.dialogData.data) {
+      if (Array.isArray(session.dialogData.data[property])) {
+        updateObject.replace[property] = session.dialogData.data[property];
+      } else {
+        updateObject.replace[property] = [session.dialogData.data[property]];
+      }
+    }
+
+    micropub
+      .update(session.dialogData.url, updateObject)
+      .then(res => {
+        session.endDialog('Post updated 👍');
+      })
+      .catch(err => {
+        session.endDialog('Uh oh 😯. There was an error sending that');
+      });
+  },
+]);
+
 bot.dialog(
   '/not-understood',
   new builder.SimpleDialog((session, results) => {
@@ -637,7 +707,16 @@ function sendSuccess(session, url, text = false) {
   }
 
   if (url) {
-    session.send(url);
+    // session.send(url);
+    const urlMessage = new builder.Message(session)
+      .text(url)
+      .suggestedActions(
+        builder.SuggestedActions.create(session, [
+          builder.CardAction.imBack(session, `delete ${url}`, 'Delete'),
+          builder.CardAction.imBack(session, `update ${url}`, 'Update'),
+        ]),
+      );
+    session.send(urlMessage);
   }
 
   // TODO: Maybe add action to delete or update post?

@@ -8,6 +8,7 @@ const Micropub = require('micropub-helper');
 const cleanText = require('./lib/clean-text');
 const cleanUrl = require('./lib/clean-url');
 const getMicropubPromts = require('./lib/prompts');
+const Storage = require('./lib/storage');
 const config = require('./lib/config');
 
 // Setup express server for html site
@@ -36,7 +37,8 @@ const connector = new builder.ChatConnector({
   appId: config.get('appId'),
   appPassword: config.get('appPassword'),
 });
-const bot = new builder.UniversalBot(connector);
+const storage = new Storage();
+const bot = new builder.UniversalBot(connector).set('storage', storage);
 const intents = new builder.IntentDialog();
 
 app.post('/bot', connector.listen());

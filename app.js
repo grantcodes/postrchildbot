@@ -120,12 +120,8 @@ bot.dialog('/instant-note', [
         'form',
       )
       .then(url => {
-        const card = getSuccessCard(
-          session,
-          url,
-          session.dialogData.data.content,
-        );
-        session.endDialog(card);
+        sendSuccess(session, url);
+        session.endDialog();
       })
       .catch(err => {
         session.send('Uh oh 😯. There was an error sending that');
@@ -166,12 +162,8 @@ bot.dialog('/instant-journal', [
         'form',
       )
       .then(url => {
-        const card = getSuccessCard(
-          session,
-          url,
-          session.dialogData.data.content,
-        );
-        session.endDialog(card);
+        sendSuccess(session, url);
+        session.endDialog();
       })
       .catch(err => {
         session.send('Uh oh 😯. There was an error sending that');
@@ -218,13 +210,8 @@ bot.dialog('/photo', [
           .create(post, 'multipart')
           .then(url => {
             fs.unlink(tempLocation);
-            const card = getSuccessCard(
-              session,
-              url,
-              session.dialogData.data.content,
-              session.dialogData.data.name,
-            );
-            session.endDialog(card);
+            sendSuccess(session, url);
+            session.endDialog();
           })
           .catch(err => {
             session.send('Uh oh 😯. There was an error sending that');
@@ -313,13 +300,8 @@ bot.dialog('/shared-url', [
     micropub
       .create(session.dialogData.data, 'form')
       .then(url => {
-        const card = getSuccessCard(
-          session,
-          url,
-          session.dialogData.data.content,
-          session.dialogData.data.name,
-        );
-        session.endDialog(card);
+        sendSuccess(session, url);
+        session.endDialog();
       })
       .catch(err => {
         session.send('Uh oh 😯. There was an error sending that');
@@ -346,12 +328,8 @@ bot.dialog('/send-reply', [
     micropub
       .create(session.dialogData.data, 'form')
       .then(url => {
-        const card = getSuccessCard(
-          session,
-          url,
-          session.dialogData.data.content,
-        );
-        session.endDialog(card);
+        sendSuccess(session, url);
+        session.endDialog();
       })
       .catch(err => {
         session.send('Uh oh 😯. There was an error sending the response');
@@ -392,13 +370,8 @@ bot.dialog('/advanced-post', [
     micropub
       .create(session.dialogData.data, 'multipart')
       .then(url => {
-        const card = getSuccessCard(
-          session,
-          url,
-          session.dialogData.data.content,
-          session.dialogData.data.name,
-        );
-        session.endDialog(card);
+        sendSuccess(session, url);
+        session.endDialog();
       })
       .catch(err => {
         session.send('Uh oh 😯. There was an error sending that');
@@ -432,12 +405,12 @@ bot.dialog('/rsvp', [
       micropub
         .create(session.dialogData.data, 'form')
         .then(url => {
-          const card = getSuccessCard(
+          sendSuccess(
             session,
             url,
             'RSVP sent to ' + session.dialogData.data['in-reply-to'],
           );
-          session.endDialog(card);
+          session.endDialog();
         })
         .catch(err => {
           session.send('Uh oh 😯. There was an error sending that');
@@ -656,30 +629,18 @@ bot.dialog('/info', [
   },
 ]);
 
-function getSuccessCard(session, url, text = false, subtitle = false) {
-  const response = new builder.Message(session);
-
-  let message = '## Post Successful';
-
-  if (subtitle) {
-    message += '\n\n ### ' + subtitle;
-  }
+function sendSuccess(session, url, text = false) {
+  session.send('Post Successful 🎉');
 
   if (text) {
-    message += '\n\n' + text;
+    session.send(text);
   }
 
   if (url) {
-    message += '\n\n' + `[View Post](${url})`;
-    // TODO: Maybe add option to delete it?
-    // response.suggestedActions(
-    //   builder.SuggestedActions.create(session, [
-    //     builder.CardAction.imBack(session, 'action=delete', 'Delete'),
-    //   ]),
-    // );
+    session.send(url);
   }
 
-  response.text(message);
+  // TODO: Maybe add action to delete or update post?
 
-  return response;
+  return null;
 }

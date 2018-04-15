@@ -161,7 +161,8 @@ bot.dialog('/instant-journal', [
         {
           h: 'entry',
           content: session.dialogData.data.content,
-          category: ['journal', 'private'],
+          category: ['journal'],
+          visibility: 'private',
         },
         'form',
       )

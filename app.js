@@ -713,8 +713,8 @@ function sendSuccess(session, url, text = false) {
       .text(url)
       .suggestedActions(
         builder.SuggestedActions.create(session, [
-          builder.CardAction.imBack(session, `delete ${url}`, 'Delete'),
-          builder.CardAction.imBack(session, `update ${url}`, 'Update'),
+          builder.CardAction.imBack(session, `delete ${url}`, `Delete ${url}`),
+          builder.CardAction.imBack(session, `update ${url}`, `Update ${url}`),
         ]),
       );
     session.send(urlMessage);

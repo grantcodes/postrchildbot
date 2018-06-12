@@ -1,6 +1,11 @@
 {% extends '_base.njk' %}
 {% block content %}
-    <p>PostrChild is a simple little chat bot that can help you publish <a href="https://indieweb.org/micropub">micropub</a> posts to your <a href="https://indieweb.org">indieweb</a> site.</p>
+    <p>PostrChild is a suit of <a href="https://indieweb.org/micropub">micropub</a> clients to help you post to your <a href="https://indieweb.org">indieweb</a> site.</p>
+    <p>Currently available is a <a href="#bot">chat bot</a>, a <a href="#photos">photo album</a> creator and a <a href="#extension">browser extension</a></p>
+
+    <h2 id="bot">Chat Bot</h2>
+
+    <p>The chat bot is built with the microsoft bot framework and is available to use on multiple platforms. Just click one of the buttons below to get started</p>
 
     <p>
         <a class="button" href='https://www.messenger.com/t/1845133039077197'>Facebook Messenger</a>
@@ -9,5 +14,16 @@
         <a class="button" href="https://t.me/PostrChildBot">Telegram</a>
     </p>
 
-    <iframe class="chatbox" src='https://webchat.botframework.com/embed/postrchild?s=2SgA7-ccoDM.cwA.PNw.nHa_onhc4gfFv21f0-Qx4EVmPaXLRAqHmyXKs4BNfeU'></iframe>
+    <h2 id="photos">PhotoPostr</h2>
+
+    <p>PhotoPostr is a micropub client to publish photo albums to your site. It supports large galleries by using your <a href="https://indieweb.org/micropub_media_endpoint">media endpoint</a></p>
+    <a class="button" href="https://photo.postrchild.com">Open PhotoPostr</a>
+
+    <h2 id="extension">Browser Extension</h2>
+
+    <p>An experimental browser extension is available on chrome and firefox.</p>
+    <p>It supports posting on your on website via an inline editor interface.</p>
+
+    <a class="button" href="https://chrome.google.com/webstore/detail/ecifafdialoohbgngelfbjplgbhiklpm">Chrome</a>
+    <a class="button" href="https://addons.mozilla.org/en-US/firefox/addon/postrchild/">Firefox</a>
 {% endblock %}

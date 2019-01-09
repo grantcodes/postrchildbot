@@ -121,6 +121,7 @@ header h1 {
   line-height: 1;
   background: linear-gradient(20deg, var(--main), var(--secondary));
   background-clip: text;
+  -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   margin: 0;
 }

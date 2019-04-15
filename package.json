@@ -2,7 +2,7 @@
   "name": "postrchildbot",
   "version": "1.0.0",
   "description": "A chatbot for making micropub request",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -10,15 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.18.2",
-    "botbuilder": "^3.14.1",
     "express": "^4.16.3",
-    "micropub-helper": "^1.3.10",
-    "nconf": "^0.10.0",
-    "nedb": "^1.8.0",
-    "node-emoji": "^1.8.1",
-    "nunjucks": "^3.1.2",
-    "request": "^2.85.0",
-    "restify": "^7.1.0",
-    "restify-plugins": "^1.6.0"
+    "nunjucks": "^3.1.2"
   }
 }

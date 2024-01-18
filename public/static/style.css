@@ -2,76 +2,76 @@
   font-family: system-ui;
   font-style: normal;
   font-weight: 300;
-  src: local(".SFNSText-Light"), local(".HelveticaNeueDeskInterface-Light"),
-    local(".LucidaGrandeUI"), local("Segoe UI Light"), local("Ubuntu Light"),
-    local("Roboto-Light"), local("DroidSans"), local("Tahoma");
+  src: local('.SFNSText-Light'), local('.HelveticaNeueDeskInterface-Light'),
+    local('.LucidaGrandeUI'), local('Segoe UI Light'), local('Ubuntu Light'),
+    local('Roboto-Light'), local('DroidSans'), local('Tahoma');
 }
 
 @font-face {
   font-family: system-ui;
   font-style: italic;
   font-weight: 300;
-  src: local(".SFNSText-LightItalic"),
-    local(".HelveticaNeueDeskInterface-Italic"), local(".LucidaGrandeUI"),
-    local("Segoe UI Light Italic"), local("Ubuntu Light Italic"),
-    local("Roboto-LightItalic"), local("DroidSans"), local("Tahoma");
+  src: local('.SFNSText-LightItalic'),
+    local('.HelveticaNeueDeskInterface-Italic'), local('.LucidaGrandeUI'),
+    local('Segoe UI Light Italic'), local('Ubuntu Light Italic'),
+    local('Roboto-LightItalic'), local('DroidSans'), local('Tahoma');
 }
 
 @font-face {
   font-family: system-ui;
   font-style: normal;
   font-weight: 400;
-  src: local(".SFNSText-Regular"), local(".HelveticaNeueDeskInterface-Regular"),
-    local(".LucidaGrandeUI"), local("Segoe UI"), local("Ubuntu"),
-    local("Roboto-Regular"), local("DroidSans"), local("Tahoma");
+  src: local('.SFNSText-Regular'), local('.HelveticaNeueDeskInterface-Regular'),
+    local('.LucidaGrandeUI'), local('Segoe UI'), local('Ubuntu'),
+    local('Roboto-Regular'), local('DroidSans'), local('Tahoma');
 }
 
 @font-face {
   font-family: system-ui;
   font-style: italic;
   font-weight: 400;
-  src: local(".SFNSText-Italic"), local(".HelveticaNeueDeskInterface-Italic"),
-    local(".LucidaGrandeUI"), local("Segoe UI Italic"), local("Ubuntu Italic"),
-    local("Roboto-Italic"), local("DroidSans"), local("Tahoma");
+  src: local('.SFNSText-Italic'), local('.HelveticaNeueDeskInterface-Italic'),
+    local('.LucidaGrandeUI'), local('Segoe UI Italic'), local('Ubuntu Italic'),
+    local('Roboto-Italic'), local('DroidSans'), local('Tahoma');
 }
 
 @font-face {
   font-family: system-ui;
   font-style: normal;
   font-weight: 500;
-  src: local(".SFNSText-Medium"), local(".HelveticaNeueDeskInterface-MediumP4"),
-    local(".LucidaGrandeUI"), local("Segoe UI Semibold"), local("Ubuntu Medium"),
-    local("Roboto-Medium"), local("DroidSans-Bold"), local("Tahoma Bold");
+  src: local('.SFNSText-Medium'), local('.HelveticaNeueDeskInterface-MediumP4'),
+    local('.LucidaGrandeUI'), local('Segoe UI Semibold'), local('Ubuntu Medium'),
+    local('Roboto-Medium'), local('DroidSans-Bold'), local('Tahoma Bold');
 }
 
 @font-face {
   font-family: system-ui;
   font-style: italic;
   font-weight: 500;
-  src: local(".SFNSText-MediumItalic"),
-    local(".HelveticaNeueDeskInterface-MediumItalicP4"),
-    local(".LucidaGrandeUI"), local("Segoe UI Semibold Italic"),
-    local("Ubuntu Medium Italic"), local("Roboto-MediumItalic"),
-    local("DroidSans-Bold"), local("Tahoma Bold");
+  src: local('.SFNSText-MediumItalic'),
+    local('.HelveticaNeueDeskInterface-MediumItalicP4'),
+    local('.LucidaGrandeUI'), local('Segoe UI Semibold Italic'),
+    local('Ubuntu Medium Italic'), local('Roboto-MediumItalic'),
+    local('DroidSans-Bold'), local('Tahoma Bold');
 }
 
 @font-face {
   font-family: system-ui;
   font-style: normal;
   font-weight: 700;
-  src: local(".SFNSText-Bold"), local(".HelveticaNeueDeskInterface-Bold"),
-    local(".LucidaGrandeUI"), local("Segoe UI Bold"), local("Ubuntu Bold"),
-    local("Roboto-Bold"), local("DroidSans-Bold"), local("Tahoma Bold");
+  src: local('.SFNSText-Bold'), local('.HelveticaNeueDeskInterface-Bold'),
+    local('.LucidaGrandeUI'), local('Segoe UI Bold'), local('Ubuntu Bold'),
+    local('Roboto-Bold'), local('DroidSans-Bold'), local('Tahoma Bold');
 }
 
 @font-face {
   font-family: system-ui;
   font-style: italic;
   font-weight: 700;
-  src: local(".SFNSText-BoldItalic"),
-    local(".HelveticaNeueDeskInterface-BoldItalic"), local(".LucidaGrandeUI"),
-    local("Segoe UI Bold Italic"), local("Ubuntu Bold Italic"),
-    local("Roboto-BoldItalic"), local("DroidSans-Bold"), local("Tahoma Bold");
+  src: local('.SFNSText-BoldItalic'),
+    local('.HelveticaNeueDeskInterface-BoldItalic'), local('.LucidaGrandeUI'),
+    local('Segoe UI Bold Italic'), local('Ubuntu Bold Italic'),
+    local('Roboto-BoldItalic'), local('DroidSans-Bold'), local('Tahoma Bold');
 }
 
 :root {
@@ -103,7 +103,7 @@ header {
   text-align: center;
   padding: 2rem;
   color: rgba(20, 20, 20, 0.9);
-  font-family: "Monoton", system-ui;
+  font-family: 'Monoton', system-ui;
   font-size: 4.8vw;
   grid-area: 👆;
 }
@@ -119,11 +119,23 @@ header a {
 
 header h1 {
   line-height: 1;
-  background: linear-gradient(20deg, var(--main), var(--secondary));
+  margin: 0;
+}
+
+header h1 a {
+  transition: background-position 0.3s;
+  background: linear-gradient(20deg, var(--main), var(--secondary) 100%);
+  background-size: 200% 100%;
+  background-position: top left;
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin: 0;
+}
+
+header h1 a:hover,
+header h1 a:focus {
+  opacity: 1;
+  background-position: bottom right;
 }
 
 header img {
@@ -207,8 +219,8 @@ footer {
     grid-template-columns: 20em auto;
     grid-template-rows: 60% 40%;
     grid-template-areas:
-      "👆 📄"
-      "👇 📄";
+      '👆 📄'
+      '👇 📄';
     place-items: stretch;
     overflow: hidden;
   }

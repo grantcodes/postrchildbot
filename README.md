@@ -1,7 +1,5 @@
-# PostrChild Chatbot
+# PostrChild Website
 
-PostrChild is a chatbot [micropub](http://micropub.net) client for your indieweb site.
+PostrChild is a suite of [micropub](http://micropub.net) clients for your indieweb site.
 
-PostrChild is build on the [Microsoft Bot Framework](https://dev.botframework.com/).
-
-You can find a web version and links to the live bots at [postrchild.com](https://postrchild.com/)
+[postrchild.com](https://postrchild.com/)
